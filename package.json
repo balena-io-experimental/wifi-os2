@@ -1,0 +1,31 @@
+{
+  "name": "wifi-os2",
+  "version": "0.0.1",
+  "description": "Node.js WiFi utils for transitioning to resinOS v2",
+  "repository": "resin-io-playground/wifi-os2",
+  "main": "index.js",
+  "scripts": {
+    "connect": "node examples/connect.js",
+    "list": "node examples/list.js",
+    "lint": "eslint **/*.js --ignore-pattern node_modules/",
+    "fix": "eslint **/*.js --ignore-pattern node_modules/ --fix"
+  },
+  "keywords": [
+    "resin",
+    "networkmanager",
+    "wifi"
+  ],
+  "author": "Zahari Petkov <zahari@resin.io>",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "bluebird": "^3.5.1",
+    "dbus": "^1.0.1"
+  },
+  "devDependencies": {
+    "eslint": "^4.10.0",
+    "eslint-config-airbnb": "^16.1.0",
+    "eslint-plugin-import": "^2.8.0",
+    "eslint-plugin-jsx-a11y": "^6.0.2",
+    "eslint-plugin-react": "^7.4.0"
+  }
+}
