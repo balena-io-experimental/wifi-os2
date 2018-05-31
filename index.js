@@ -11,6 +11,7 @@ const NM_SERVICE_PATH = '/org/freedesktop/NetworkManager';
 const NM_SETTINGS_PATH = '/org/freedesktop/NetworkManager/Settings';
 
 const NM_SERVICE_INTERFACE = 'org.freedesktop.NetworkManager';
+const NM_SETTINGS_INTERFACE = 'org.freedesktop.NetworkManager.Settings';
 const NM_CONNECTION_INTERFACE = 'org.freedesktop.NetworkManager.Settings.Connection';
 const NM_ACTIVE_INTERFACE = 'org.freedesktop.NetworkManager.Connection.Active';
 const NM_DEVICE_INTERFACE = 'org.freedesktop.NetworkManager.Device';
@@ -63,6 +64,15 @@ function getServiceI() {
     );
 }
 
+function getSettingsI() {
+  return BUS
+    .getInterfaceAsync(
+      NM_SERVICE,
+      NM_SETTINGS_PATH,
+      NM_SETTINGS_INTERFACE,
+    );
+}
+
 function getDeviceI(devicePath) {
   return BUS
     .getInterfaceAsync(
@@ -106,6 +116,26 @@ function getConnectionI(settingsPath) {
       settingsPath,
       NM_CONNECTION_INTERFACE,
     );
+}
+
+function listConnections() {
+  return getSettingsI()
+    .call('ListConnectionsAsync');
+}
+
+function getConnectionByUuid(uuid) {
+  return getSettingsI()
+    .call('GetConnectionByUuidAsync', uuid);
+}
+
+function getConnectionSettings(settingsPath) {
+  return getConnectionI(settingsPath)
+    .call('GetSettingsAsync');
+}
+
+function updateConnectionSettings(settingsPath, settings) {
+  return getConnectionI(settingsPath)
+    .call('UpdateAsync', settings);
 }
 
 function getDevicePaths() {
@@ -306,6 +336,44 @@ function connectToAccessPoint(ssid, passphrase, dns) {
     .bind();
 }
 
+function listEthernetConnections() {
+  return listConnections()
+    .map(connectionObjectFromPath)
+    .map(addConnectionSettings)
+    .filter(isEthernetConnection)
+    .then(addConnectionsState);
+}
+
+function connectionObjectFromPath(settingsPath) {
+  return {'settingsPath': settingsPath};
+}
+
+function addConnectionSettings(connection) {
+  return getConnectionSettings(connection.settingsPath)
+    .then((settings) => { connection.settings = settings; return connection; });
+}
+
+function isEthernetConnection(connection) {
+  return connection.settings.connection.type === '802-3-ethernet';
+}
+
+function addConnectionsState(connections) {
+  return getActiveConnections()
+    .map(getActiveConnectionPath)
+    .then((paths) => {
+      for (let i = 0; i < connections.length; i += 1) {
+        connections[i].active = paths.includes(connections[i].settingsPath);
+      }
+      return connections;
+    });
+}
+
+function updateConnection(uuid, settings) {
+  console.log(settings);
+  return getConnectionByUuid(uuid)
+    .then((settingsPath) => updateConnectionSettings(settingsPath, settings));
+}
+
 exports.init = init;
 
 exports.fini = fini;
@@ -313,3 +381,7 @@ exports.fini = fini;
 exports.listAccessPoints = listAccessPoints;
 
 exports.connectToAccessPoint = connectToAccessPoint;
+
+exports.listEthernetConnections = listEthernetConnections;
+
+exports.updateConnection = updateConnection;

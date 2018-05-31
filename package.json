@@ -7,6 +7,7 @@
   "scripts": {
     "connect": "node examples/connect.js",
     "list": "node examples/list.js",
+    "eth": "node examples/eth.js",
     "lint": "eslint **/*.js --ignore-pattern node_modules/",
     "fix": "eslint **/*.js --ignore-pattern node_modules/ --fix"
   },
